@@ -32,13 +32,27 @@
             android:layout_marginTop="5dp"
             android:text="Created by F0x1d"/>
 
-        <com.google.android.material.button.MaterialButton
-            android:text="@string/source_code"
-            android:layout_marginTop="20dp"
+        <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/source_code"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+            android:layout_height="wrap_content">
+
+            <com.google.android.material.button.MaterialButton
+                android:layout_margin="5dp"
+                android:text="@string/source_code"
+                android:layout_marginTop="20dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/source_code" />
+
+            <com.google.android.material.button.MaterialButton
+                android:layout_margin="5dp"
+                android:text="@string/support_me"
+                android:layout_marginTop="20dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/support_me"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+        </LinearLayout>
     </LinearLayout>
 
 </RelativeLayout>

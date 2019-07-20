@@ -36,6 +36,12 @@ public class AboutAppFragment extends Fragment {
                 startActivity(new Intent(Intent.ACTION_VIEW).setData(Uri.parse("https://github.com/F0x1d/Cripty")));
             }
         });
+        v.findViewById(R.id.support_me).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(Intent.ACTION_VIEW).setData(Uri.parse("https://yasobe.ru/na/f0x1d")));
+            }
+        });
 
         TextView createdBy = v.findViewById(R.id.created);
         createdBy.setSingleLine();
