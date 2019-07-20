@@ -180,6 +180,7 @@ public class MainFragment extends Fragment {
                             outputStream.close();
 
                             progressDialog.cancel();
+
                             Snackbar.make(getView(), getString(R.string.saved_to) + " " + cryptedFile.getAbsolutePath(), Snackbar.LENGTH_LONG).show();
                         } catch (Exception e) {
                             progressDialog.cancel();

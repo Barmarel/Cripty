@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Cripty</string>
+    <string name="encrypt">Зашифровать</string>
+    <string name="decrypt">Расшифровать</string>
+    <string name="choose_key">Введите ваш AES ключ для шифрования</string>
+    <string name="key">AES ключ</string>
+    <string name="saved_to">Успешно сохранено по пути</string>
+    <string name="cancel">Отменить</string>
+    <string name="ok">ОК</string>
+    <string name="copy">Копировать</string>
+    <string name="copied">Скопировано</string>
+    <string name="loading">Обработка...</string>
+</resources>
