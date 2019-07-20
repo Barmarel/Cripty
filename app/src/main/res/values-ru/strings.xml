@@ -14,4 +14,5 @@
     <string name="source_code">Исходный код</string>
     <string name="created_by">Создано</string>
     <string name="apostrofe">\'ом</string>
+    <string name="choose_file">Выберите файл</string>
 </resources>

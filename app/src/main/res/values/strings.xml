@@ -14,4 +14,5 @@
     <string name="source_code">Source code</string>
     <string name="created_by">Created by</string>
     <string name="apostrofe"></string>
+    <string name="choose_file">Choose file</string>
 </resources>

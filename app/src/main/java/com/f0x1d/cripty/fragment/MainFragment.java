@@ -3,22 +3,15 @@ package com.f0x1d.cripty.fragment;
 import android.app.ProgressDialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.provider.OpenableColumns;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.MimeTypeMap;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -27,6 +20,9 @@ import androidx.fragment.app.Fragment;
 
 import com.f0x1d.cripty.R;
 import com.f0x1d.cripty.activity.MainActivity;
+import com.f0x1d.cripty.fragment.dialogs.FilePickerDialogFragment;
+import com.github.angads25.filepicker.model.DialogConfigs;
+import com.github.angads25.filepicker.model.DialogProperties;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
@@ -35,21 +31,23 @@ import com.google.android.material.textfield.TextInputLayout;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.List;
 
 import javax.crypto.Cipher;
+import javax.crypto.CipherOutputStream;
 import javax.crypto.spec.SecretKeySpec;
 
-public class MainFragment extends Fragment {
+public class MainFragment extends Fragment implements FilePickerDialogFragment.OnFilesSelectedListener {
 
     public final int ENCRYPT_CODE = 0;
     public final int DECRYPT_CODE = 1;
     public MaterialButton encrypt;
     public MaterialButton decrypt;
     public Toolbar toolbar;
+
+    public int currentMode = -1;
 
     public static MainFragment newInstance() {
         Bundle args = new Bundle();
@@ -74,10 +72,19 @@ public class MainFragment extends Fragment {
         View.OnClickListener listener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                DialogProperties properties = new DialogProperties();
+                properties.selection_mode = DialogConfigs.SINGLE_MODE;
+                properties.selection_type = DialogConfigs.FILE_SELECT;
+                properties.root = Environment.getExternalStorageDirectory();
+
                 if (v.getId() == R.id.decrypt)
-                    openFile("*/*", DECRYPT_CODE, getActivity());
+                    currentMode = DECRYPT_CODE;
                 else if (v.getId() == R.id.encrypt)
-                    openFile("*/*", ENCRYPT_CODE, getActivity());
+                    currentMode = ENCRYPT_CODE;
+
+                FilePickerDialogFragment filePickerDialogFragment = FilePickerDialogFragment.newInstance(null, getString(R.string.choose_file), properties);
+                filePickerDialogFragment.setListener(MainFragment.this);
+                filePickerDialogFragment.show(getActivity().getSupportFragmentManager(), null);
             }
         };
 
@@ -100,100 +107,6 @@ public class MainFragment extends Fragment {
         });
 
         return v;
-    }
-
-    @Override
-    public void onActivityResult(final int requestCode, int resultCode, @Nullable final Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (data == null)
-            return;
-
-        View v = LayoutInflater.from(getMainActivity()).inflate(R.layout.edit_text, null);
-        final TextInputLayout editTextLayout = v.findViewById(R.id.edittext_layout);
-        editTextLayout.setHint(getString(R.string.key));
-
-        new MaterialAlertDialogBuilder(getMainActivity())
-                .setTitle(R.string.choose_key)
-                .setView(v)
-                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        final ProgressDialog progressDialog = new ProgressDialog(getMainActivity());
-                        progressDialog.setMessage(getString(R.string.loading));
-                        progressDialog.setCancelable(false);
-                        progressDialog.show();
-
-                        String key = ((EditText) v.findViewById(R.id.edittext)).getText().toString();
-
-                        try {
-                            File appFolder = new File(Environment.getExternalStorageDirectory() + "/Crypty");
-                            if (!appFolder.exists())
-                                appFolder.mkdirs();
-
-                            InputStream realInputStream = getMainActivity().getContentResolver().openInputStream(data.getData());
-
-                            File realFile = null;
-
-                            try {
-                                realFile = new File(getMainActivity().getCacheDir(), "cache");
-                                OutputStream output = new FileOutputStream(realFile);
-                                try {
-                                    byte[] buffer = new byte[4 * 1024];
-                                    int read;
-
-                                    while ((read = realInputStream.read(buffer)) != -1) {
-                                        output.write(buffer, 0, read);
-                                    }
-
-                                    output.flush();
-                                } finally {
-                                    output.close();
-                                }
-                            } finally {
-                                realInputStream.close();
-                            }
-
-                            File cryptedFile = null;
-
-                            if (requestCode == ENCRYPT_CODE)
-                                cryptedFile = new File(appFolder, "encrypted_" + getFileName(data.getData()));
-                            else if (requestCode == DECRYPT_CODE)
-                                cryptedFile = new File(appFolder, "decrypted_" + getFileName(data.getData()));
-
-                            SecretKeySpec secretKey = new SecretKeySpec(key.getBytes(), "AES");
-                            Cipher cipher = Cipher.getInstance("AES");
-                            if (requestCode == ENCRYPT_CODE)
-                                cipher.init(Cipher.ENCRYPT_MODE, secretKey);
-                            else if (requestCode == DECRYPT_CODE)
-                                cipher.init(Cipher.DECRYPT_MODE, secretKey);
-
-                            FileInputStream inputStream = new FileInputStream(realFile);
-                            byte[] inputBytes = new byte[(int) realFile.length()];
-                            inputStream.read(inputBytes);
-
-                            byte[] outputBytes = cipher.doFinal(inputBytes);
-
-                            FileOutputStream outputStream = new FileOutputStream(cryptedFile);
-                            outputStream.write(outputBytes);
-
-                            inputStream.close();
-                            outputStream.close();
-
-                            progressDialog.cancel();
-
-                            Snackbar.make(getView(), getString(R.string.saved_to) + " " + cryptedFile.getAbsolutePath(), Snackbar.LENGTH_LONG).show();
-                        } catch (Exception e) {
-                            progressDialog.cancel();
-                            processError(e);
-                        }
-                    }
-                })
-                .setNeutralButton(R.string.cancel, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.cancel();
-                    }
-                }).show();
     }
 
     public void processError(Exception e) {
@@ -226,53 +139,88 @@ public class MainFragment extends Fragment {
         e.printStackTrace();
     }
 
-    public String getFileName(Uri uri) {
-        String result = null;
-        if (uri.getScheme().equals("content")) {
-            Cursor cursor = getContext().getContentResolver().query(uri, null, null, null, null);
-            try {
-                if (cursor != null && cursor.moveToFirst()) {
-                    result = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
-                }
-            } finally {
-                cursor.close();
-            }
-        }
-        if (result == null) {
-            result = uri.getPath();
-            int cut = result.lastIndexOf('/');
-            if (cut != -1) {
-                result = result.substring(cut + 1);
-            }
-        }
-        return result;
-    }
+    @Override
+    public void onFilesSelected(String tag, List<File> files) {
+        File file = files.get(0);
 
-    public void openFile(String minmeType, int requestCode, Context c) {
+        View v = LayoutInflater.from(getMainActivity()).inflate(R.layout.edit_text, null);
+        final TextInputLayout editTextLayout = v.findViewById(R.id.edittext_layout);
+        editTextLayout.setHint(getString(R.string.key));
 
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.setType(minmeType);
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        new MaterialAlertDialogBuilder(getMainActivity())
+                .setTitle(R.string.choose_key)
+                .setView(v)
+                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        final ProgressDialog progressDialog = new ProgressDialog(getMainActivity());
+                        progressDialog.setMessage(getString(R.string.loading));
+                        progressDialog.setCancelable(false);
+                        progressDialog.show();
 
-        // special intent for Samsung file manager
-        Intent sIntent = new Intent("com.f0x1d.notes.main.PICK_DATA");
-        // if you want any file type, you can skip next line
-        sIntent.putExtra("CONTENT_TYPE", minmeType);
-        sIntent.addCategory(Intent.CATEGORY_DEFAULT);
+                        String key = ((EditText) v.findViewById(R.id.edittext)).getText().toString();
 
-        Intent chooserIntent;
-        if (c.getPackageManager().resolveActivity(sIntent, 0) != null) {
-            // it is device with samsung file manager
-            chooserIntent = Intent.createChooser(sIntent, "Open file");
-            chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[]{intent});
-        } else {
-            chooserIntent = Intent.createChooser(intent, "Open file");
-        }
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    File appFolder = new File(Environment.getExternalStorageDirectory() + "/Crypty");
+                                    if (!appFolder.exists())
+                                        appFolder.mkdirs();
 
-        try {
-            startActivityForResult(chooserIntent, requestCode);
-        } catch (android.content.ActivityNotFoundException ex) {
-            Toast.makeText(getActivity(), "No suitable File Manager was found.", Toast.LENGTH_SHORT).show();
-        }
+                                    File cryptedFile = null;
+
+                                    if (currentMode == ENCRYPT_CODE)
+                                        cryptedFile = new File(appFolder, "encrypted_" + file.getName());
+                                    else if (currentMode == DECRYPT_CODE)
+                                        cryptedFile = new File(appFolder, "decrypted_" + file.getName());
+
+                                    SecretKeySpec secretKey = new SecretKeySpec(key.getBytes(), "AES");
+                                    Cipher cipher = Cipher.getInstance("AES");
+                                    if (currentMode == ENCRYPT_CODE)
+                                        cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+                                    else if (currentMode == DECRYPT_CODE)
+                                        cipher.init(Cipher.DECRYPT_MODE, secretKey);
+
+                                    FileInputStream inputStream = new FileInputStream(file);
+                                    CipherOutputStream cipherOutputStream = new CipherOutputStream(new FileOutputStream(cryptedFile), cipher);
+
+                                    byte[] buffer = new byte[4 * 1024];
+                                    int len;
+                                    while ((len = inputStream.read(buffer)) != -1) {
+                                        cipherOutputStream.write(buffer, 0, len);
+                                    }
+
+                                    inputStream.close();
+                                    cipherOutputStream.close();
+
+                                    File finalCryptedFile = cryptedFile;
+                                    getMainActivity().runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            progressDialog.cancel();
+
+                                            Snackbar.make(getView(), getString(R.string.saved_to) + " " + finalCryptedFile.getAbsolutePath(), Snackbar.LENGTH_LONG).show();
+                                        }
+                                    });
+                                } catch (Exception e) {
+                                    getMainActivity().runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            progressDialog.cancel();
+                                            processError(e);
+                                        }
+                                    });
+                                }
+                            }
+                        }).start();
+                    }
+                })
+                .setNeutralButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                }).show();
     }
 }
