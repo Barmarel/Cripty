@@ -43,6 +43,7 @@ public class MainFragment extends Fragment implements FilePickerDialogFragment.O
 
     public final int ENCRYPT_CODE = 0;
     public final int DECRYPT_CODE = 1;
+
     public MaterialButton encrypt;
     public MaterialButton decrypt;
     public Toolbar toolbar;
