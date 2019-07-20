@@ -10,4 +10,8 @@
     <string name="copy">Copy</string>
     <string name="copied">Copied</string>
     <string name="loading">Processing...</string>
+    <string name="about_app">About app</string>
+    <string name="source_code">Source code</string>
+    <string name="created_by">Created by</string>
+    <string name="apostrofe"></string>
 </resources>

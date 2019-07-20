@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.OpenableColumns;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.MimeTypeMap;
@@ -58,20 +59,6 @@ public class MainFragment extends Fragment {
         return fragment;
     }
 
-    public static String getMimeType(Context context, Uri uri) {
-        String extension;
-
-        if (uri.getScheme().equals(ContentResolver.SCHEME_CONTENT)) {
-            final MimeTypeMap mime = MimeTypeMap.getSingleton();
-            extension = mime.getExtensionFromMimeType(context.getContentResolver().getType(uri));
-        } else {
-            extension = MimeTypeMap.getFileExtensionFromUrl(Uri.fromFile(new File(uri.getPath())).toString());
-
-        }
-
-        return extension;
-    }
-
     public MainActivity getMainActivity() {
         return (MainActivity) getActivity();
     }
@@ -98,6 +85,19 @@ public class MainFragment extends Fragment {
         decrypt.setOnClickListener(listener);
 
         toolbar.setTitle(R.string.app_name);
+        toolbar.inflateMenu(R.menu.about);
+        toolbar.getMenu().findItem(R.id.about).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                getMainActivity().getSupportFragmentManager()
+                        .beginTransaction()
+                        .setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out, android.R.animator.fade_in, android.R.animator.fade_out)
+                        .replace(R.id.container, AboutAppFragment.newInstance())
+                        .addToBackStack(null)
+                        .commit();
+                return false;
+            }
+        });
 
         return v;
     }

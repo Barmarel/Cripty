@@ -30,4 +30,12 @@ public class MainActivity extends AppCompatActivity {
                 .replace(R.id.container, MainFragment.newInstance())
                 .commit();
     }
+
+    @Override
+    public void onBackPressed() {
+        if (getSupportFragmentManager().getBackStackEntryCount() != 0)
+            getSupportFragmentManager().popBackStack();
+        else
+            super.onBackPressed();
+    }
 }

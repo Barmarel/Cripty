@@ -10,4 +10,8 @@
     <string name="copy">Копировать</string>
     <string name="copied">Скопировано</string>
     <string name="loading">Обработка...</string>
+    <string name="about_app">О приложении</string>
+    <string name="source_code">Исходный код</string>
+    <string name="created_by">Создано</string>
+    <string name="apostrofe">\'ом</string>
 </resources>
