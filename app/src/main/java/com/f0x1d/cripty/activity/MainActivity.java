@@ -1,12 +1,11 @@
 package com.f0x1d.cripty.activity;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.Manifest;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-import android.view.View;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.f0x1d.cripty.R;
 import com.f0x1d.cripty.fragment.MainFragment;
@@ -20,7 +19,7 @@ public class MainActivity extends AppCompatActivity {
         }
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             getWindow().setStatusBarColor(Color.GRAY);
-        } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O_MR1){
+        } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O_MR1) {
             getWindow().setNavigationBarColor(Color.BLACK);
         }
         super.onCreate(savedInstanceState);

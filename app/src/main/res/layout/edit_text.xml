@@ -3,9 +3,16 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <EditText
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:id="@+id/edittext"/>
+        android:id="@+id/edittext_layout"
+        android:layout_margin="10dp">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/edittext"/>
+
+    </com.google.android.material.textfield.TextInputLayout>
 </LinearLayout>

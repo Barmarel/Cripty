@@ -9,9 +9,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.provider.MediaStore;
 import android.provider.OpenableColumns;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,23 +19,31 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
 import com.f0x1d.cripty.R;
 import com.f0x1d.cripty.activity.MainActivity;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.textfield.TextInputLayout;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 
 public class MainFragment extends Fragment {
+
+    public final int ENCRYPT_CODE = 0;
+    public final int DECRYPT_CODE = 1;
+    public MaterialButton encrypt;
+    public MaterialButton decrypt;
 
     public static MainFragment newInstance() {
         Bundle args = new Bundle();
@@ -47,15 +53,23 @@ public class MainFragment extends Fragment {
         return fragment;
     }
 
-    public MainActivity getMainActivity(){
-        return (MainActivity) getActivity();
+    public static String getMimeType(Context context, Uri uri) {
+        String extension;
+
+        if (uri.getScheme().equals(ContentResolver.SCHEME_CONTENT)) {
+            final MimeTypeMap mime = MimeTypeMap.getSingleton();
+            extension = mime.getExtensionFromMimeType(context.getContentResolver().getType(uri));
+        } else {
+            extension = MimeTypeMap.getFileExtensionFromUrl(Uri.fromFile(new File(uri.getPath())).toString());
+
+        }
+
+        return extension;
     }
 
-    public MaterialButton encrypt;
-    public MaterialButton decrypt;
-
-    public final int ENCRYPT_CODE = 0;
-    public final int DECRYPT_CODE = 1;
+    public MainActivity getMainActivity() {
+        return (MainActivity) getActivity();
+    }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -87,104 +101,108 @@ public class MainFragment extends Fragment {
             return;
 
         View v = LayoutInflater.from(getMainActivity()).inflate(R.layout.edit_text, null);
-        final EditText editText = v.findViewById(R.id.edittext);
-        editText.setHint("AES Key");
+        final TextInputLayout editTextLayout = v.findViewById(R.id.edittext_layout);
+        editTextLayout.setHint("AES Key");
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(getMainActivity());
-        builder.setTitle("Input your AES key");
-        builder.setView(v);
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                final ProgressDialog progressDialog = new ProgressDialog(getMainActivity());
-                progressDialog.setMessage("Processing...");
-                progressDialog.setCancelable(false);
-                progressDialog.show();
+        new MaterialAlertDialogBuilder(getMainActivity())
+                .setTitle("Input your AES key")
+                .setView(v)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        final ProgressDialog progressDialog = new ProgressDialog(getMainActivity());
+                        progressDialog.setMessage("Processing...");
+                        progressDialog.setCancelable(false);
+                        progressDialog.show();
 
-                String key = editText.getText().toString();
+                        String key = ((EditText) v.findViewById(R.id.edittext)).getText().toString();
 
-                try {
-                    File appFolder = new File(Environment.getExternalStorageDirectory() + "/Crypty");
-                    if (!appFolder.exists())
-                        appFolder.mkdirs();
-
-                    InputStream realInputStream = getMainActivity().getContentResolver().openInputStream(data.getData());
-
-                    File realFile = null;
-
-                    try {
-                        realFile = new File(getMainActivity().getCacheDir(), "cache");
-                        OutputStream output = new FileOutputStream(realFile);
                         try {
-                            byte[] buffer = new byte[4 * 1024];
-                            int read;
+                            File appFolder = new File(Environment.getExternalStorageDirectory() + "/Crypty");
+                            if (!appFolder.exists())
+                                appFolder.mkdirs();
 
-                            while ((read = realInputStream.read(buffer)) != -1) {
-                                output.write(buffer, 0, read);
+                            InputStream realInputStream = getMainActivity().getContentResolver().openInputStream(data.getData());
+
+                            File realFile = null;
+
+                            try {
+                                realFile = new File(getMainActivity().getCacheDir(), "cache");
+                                OutputStream output = new FileOutputStream(realFile);
+                                try {
+                                    byte[] buffer = new byte[4 * 1024];
+                                    int read;
+
+                                    while ((read = realInputStream.read(buffer)) != -1) {
+                                        output.write(buffer, 0, read);
+                                    }
+
+                                    output.flush();
+                                } finally {
+                                    output.close();
+                                }
+                            } finally {
+                                realInputStream.close();
                             }
 
-                            output.flush();
-                        } finally {
-                            output.close();
+                            File cryptedFile = null;
+
+                            if (requestCode == ENCRYPT_CODE)
+                                cryptedFile = new File(appFolder, "encrypted_" + getFileName(data.getData()) + "." + getMimeType(getActivity(), data.getData()));
+                            else if (requestCode == DECRYPT_CODE)
+                                cryptedFile = new File(appFolder, "decrypted_" + getFileName(data.getData()) + "." + getMimeType(getActivity(), data.getData()));
+
+                            SecretKeySpec secretKey = new SecretKeySpec(key.getBytes(), "AES");
+                            Cipher cipher = Cipher.getInstance("AES");
+                            if (requestCode == ENCRYPT_CODE)
+                                cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+                            else if (requestCode == DECRYPT_CODE)
+                                cipher.init(Cipher.DECRYPT_MODE, secretKey);
+
+                            FileInputStream inputStream = new FileInputStream(realFile);
+                            byte[] inputBytes = new byte[(int) realFile.length()];
+                            inputStream.read(inputBytes);
+
+                            byte[] outputBytes = cipher.doFinal(inputBytes);
+
+                            FileOutputStream outputStream = new FileOutputStream(cryptedFile);
+                            outputStream.write(outputBytes);
+
+                            inputStream.close();
+                            outputStream.close();
+
+                            progressDialog.cancel();
+                            Toast.makeText(getActivity(), "Successfully saved to " + cryptedFile.getAbsolutePath(), Toast.LENGTH_LONG).show();
+                        } catch (Exception e) {
+                            progressDialog.cancel();
+                            processError(e);
                         }
-                    } finally {
-                        realInputStream.close();
                     }
-
-                    File cryptedFile = null;
-
-                    if (requestCode == ENCRYPT_CODE)
-                        cryptedFile = new File(appFolder, "encrypted_" + getFileName(data.getData()) + "." + getMimeType(getActivity(), data.getData()));
-                    else if (requestCode == DECRYPT_CODE)
-                        cryptedFile = new File(appFolder, "decrypted_" + getFileName(data.getData()) + "." + getMimeType(getActivity(), data.getData()));
-
-                    SecretKeySpec secretKey = new SecretKeySpec(key.getBytes(), "AES");
-                    Cipher cipher = Cipher.getInstance("AES");
-                    if (requestCode == ENCRYPT_CODE)
-                        cipher.init(Cipher.ENCRYPT_MODE, secretKey);
-                    else if (requestCode == DECRYPT_CODE)
-                        cipher.init(Cipher.DECRYPT_MODE, secretKey);
-
-                    FileInputStream inputStream = new FileInputStream(realFile);
-                    byte[] inputBytes = new byte[(int) realFile.length()];
-                    inputStream.read(inputBytes);
-
-                    byte[] outputBytes = cipher.doFinal(inputBytes);
-
-                    FileOutputStream outputStream = new FileOutputStream(cryptedFile);
-                    outputStream.write(outputBytes);
-
-                    inputStream.close();
-                    outputStream.close();
-
-                    progressDialog.cancel();
-                    Toast.makeText(getActivity(), "Successfully saved to " + cryptedFile.getAbsolutePath(), Toast.LENGTH_LONG).show();
-                } catch (Exception e){
-                    progressDialog.cancel();
-                    processError(e);
-                }
-            }
-        });
-        builder.setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.cancel();
-            }
-        });
-        builder.show();
+                })
+                .setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                }).show();
     }
 
-    public void processError(Exception e){
-        AlertDialog.Builder builder = new AlertDialog.Builder(getMainActivity());
-        builder.setTitle("Error!");
-        builder.setMessage(e.getLocalizedMessage());
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.cancel();
-            }
-        });
-        builder.show();
+    public void processError(Exception e) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        e.printStackTrace(pw);
+        String sStackTrace = sw.toString();
+
+        new MaterialAlertDialogBuilder(getMainActivity())
+                .setTitle("Error!")
+                .setMessage(sStackTrace)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                })
+                .show();
 
         e.printStackTrace();
     }
@@ -209,20 +227,6 @@ public class MainFragment extends Fragment {
             }
         }
         return result;
-    }
-
-    public static String getMimeType(Context context, Uri uri) {
-        String extension;
-
-        if (uri.getScheme().equals(ContentResolver.SCHEME_CONTENT)) {
-            final MimeTypeMap mime = MimeTypeMap.getSingleton();
-            extension = mime.getExtensionFromMimeType(context.getContentResolver().getType(uri));
-        } else {
-            extension = MimeTypeMap.getFileExtensionFromUrl(Uri.fromFile(new File(uri.getPath())).toString());
-
-        }
-
-        return extension;
     }
 
     public void openFile(String minmeType, int requestCode, Context c) {
