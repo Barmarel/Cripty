@@ -1,6 +1,8 @@
 package com.f0x1d.cripty.fragment;
 
 import android.app.ProgressDialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -19,12 +21,14 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 
 import com.f0x1d.cripty.R;
 import com.f0x1d.cripty.activity.MainActivity;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputLayout;
 
 import java.io.File;
@@ -44,6 +48,7 @@ public class MainFragment extends Fragment {
     public final int DECRYPT_CODE = 1;
     public MaterialButton encrypt;
     public MaterialButton decrypt;
+    public Toolbar toolbar;
 
     public static MainFragment newInstance() {
         Bundle args = new Bundle();
@@ -77,6 +82,7 @@ public class MainFragment extends Fragment {
 
         encrypt = v.findViewById(R.id.encrypt);
         decrypt = v.findViewById(R.id.decrypt);
+        toolbar = v.findViewById(R.id.toolbar);
 
         View.OnClickListener listener = new View.OnClickListener() {
             @Override
@@ -91,6 +97,8 @@ public class MainFragment extends Fragment {
         encrypt.setOnClickListener(listener);
         decrypt.setOnClickListener(listener);
 
+        toolbar.setTitle(R.string.app_name);
+
         return v;
     }
 
@@ -102,16 +110,16 @@ public class MainFragment extends Fragment {
 
         View v = LayoutInflater.from(getMainActivity()).inflate(R.layout.edit_text, null);
         final TextInputLayout editTextLayout = v.findViewById(R.id.edittext_layout);
-        editTextLayout.setHint("AES Key");
+        editTextLayout.setHint(getString(R.string.key));
 
         new MaterialAlertDialogBuilder(getMainActivity())
-                .setTitle("Input your AES key")
+                .setTitle(R.string.choose_key)
                 .setView(v)
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         final ProgressDialog progressDialog = new ProgressDialog(getMainActivity());
-                        progressDialog.setMessage("Processing...");
+                        progressDialog.setMessage(getString(R.string.loading));
                         progressDialog.setCancelable(false);
                         progressDialog.show();
 
@@ -148,9 +156,9 @@ public class MainFragment extends Fragment {
                             File cryptedFile = null;
 
                             if (requestCode == ENCRYPT_CODE)
-                                cryptedFile = new File(appFolder, "encrypted_" + getFileName(data.getData()) + "." + getMimeType(getActivity(), data.getData()));
+                                cryptedFile = new File(appFolder, "encrypted_" + getFileName(data.getData()));
                             else if (requestCode == DECRYPT_CODE)
-                                cryptedFile = new File(appFolder, "decrypted_" + getFileName(data.getData()) + "." + getMimeType(getActivity(), data.getData()));
+                                cryptedFile = new File(appFolder, "decrypted_" + getFileName(data.getData()));
 
                             SecretKeySpec secretKey = new SecretKeySpec(key.getBytes(), "AES");
                             Cipher cipher = Cipher.getInstance("AES");
@@ -172,14 +180,14 @@ public class MainFragment extends Fragment {
                             outputStream.close();
 
                             progressDialog.cancel();
-                            Toast.makeText(getActivity(), "Successfully saved to " + cryptedFile.getAbsolutePath(), Toast.LENGTH_LONG).show();
+                            Snackbar.make(getView(), getString(R.string.saved_to) + " " + cryptedFile.getAbsolutePath(), Snackbar.LENGTH_LONG).show();
                         } catch (Exception e) {
                             progressDialog.cancel();
                             processError(e);
                         }
                     }
                 })
-                .setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
+                .setNeutralButton(R.string.cancel, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.cancel();
@@ -196,10 +204,20 @@ public class MainFragment extends Fragment {
         new MaterialAlertDialogBuilder(getMainActivity())
                 .setTitle("Error!")
                 .setMessage(sStackTrace)
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.cancel();
+                    }
+                })
+                .setNeutralButton(R.string.copy, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        ClipboardManager manager = (ClipboardManager) getMainActivity().getSystemService(Context.CLIPBOARD_SERVICE);
+                        ClipData data = ClipData.newPlainText("error", sStackTrace);
+                        manager.setPrimaryClip(data);
+
+                        Snackbar.make(getView(), R.string.copied, Snackbar.LENGTH_SHORT).show();
                     }
                 })
                 .show();

@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">Cripty</string>
+    <string name="encrypt">Encrypt</string>
+    <string name="decrypt">Decrypt</string>
+    <string name="choose_key">Input your AES key</string>
+    <string name="key">AES Key</string>
+    <string name="saved_to">Successfully saved to</string>
+    <string name="cancel">Cancel</string>
+    <string name="ok">OK</string>
+    <string name="copy">Copy</string>
+    <string name="copied">Copied</string>
+    <string name="loading">Processing...</string>
 </resources>
