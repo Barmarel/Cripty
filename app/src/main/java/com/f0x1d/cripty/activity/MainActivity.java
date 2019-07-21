@@ -6,8 +6,10 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -20,11 +22,14 @@ import java.io.StringWriter;
 
 public class MainActivity extends AppCompatActivity {
 
+    private SharedPreferences defPrefs;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 228);
         }
+        defPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -78,7 +83,13 @@ public class MainActivity extends AppCompatActivity {
     public void onBackPressed() {
         if (getSupportFragmentManager().getBackStackEntryCount() != 0)
             getSupportFragmentManager().popBackStack();
-        else
+        else {
+            moveTaskToBack(true);
             super.onBackPressed();
+        }
+    }
+
+    public SharedPreferences getDefaultPreferences(){
+        return defPrefs;
     }
 }

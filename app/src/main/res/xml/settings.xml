@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="AES">
+        <Preference
+            android:title="@string/choose_default_key"
+            android:key="defKey"/>
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/file">
+        <Preference
+            android:key="enFileName"
+            android:title="@string/en_file_name" />
+        <Preference
+            android:key="deFileName"
+            android:title="@string/de_file_name" />
+    </PreferenceCategory>
+
+</PreferenceScreen>

@@ -16,4 +16,12 @@
     <string name="apostrofe">\'ом</string>
     <string name="choose_file">Выберите файл</string>
     <string name="support_me">Поддержать меня</string>
+    <string name="settings">Настройки</string>
+    <string name="choose_default_key">Ключ AES по умолчанию</string>
+    <string name="set_empty_to_use_default">Оставьте пустым для использования значения по умолчанию</string>
+    <string name="set_empty_to_set_manually">Оставьте пустым для ручного выбора</string>
+    <string name="file">Файл</string>
+    <string name="en_file_name">Имя для зашифрованных файлов по умолчанию</string>
+    <string name="de_file_name">Имя для расшифрованных файлов по умолчанию</string>
+    <string name="file_name">Имя файла</string>
 </resources>

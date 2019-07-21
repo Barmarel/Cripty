@@ -5,4 +5,7 @@
         android:title="@string/about_app"
         android:id="@+id/about"/>
 
+    <item
+        android:title="@string/settings"
+        android:id="@+id/settings"/>
 </menu>
