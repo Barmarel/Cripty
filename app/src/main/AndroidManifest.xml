@@ -21,6 +21,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".activity.SettingsActivity" android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|uiMode"/>
+        <receiver android:name=".receiver.CopyTextReceiver"/>
     </application>
 
 </manifest>

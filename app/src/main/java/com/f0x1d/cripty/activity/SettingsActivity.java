@@ -158,6 +158,11 @@ public class SettingsActivity extends PreferenceActivity {
                 progressDialog.show();
 
                 File appFolder = new File(Environment.getExternalStorageDirectory() + "/Cripty");
+                if (!appFolder.exists()){
+                    progressDialog.cancel();
+                    return false;
+                }
+
                 if (appFolder.listFiles().length != 0){
                     for (File file : appFolder.listFiles()) {
                         file.delete();
