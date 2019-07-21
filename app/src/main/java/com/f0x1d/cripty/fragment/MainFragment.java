@@ -186,7 +186,7 @@ public class MainFragment extends Fragment implements FilePickerDialogFragment.O
                                     FileInputStream inputStream = new FileInputStream(file);
                                     CipherOutputStream cipherOutputStream = new CipherOutputStream(new FileOutputStream(cryptedFile), cipher);
 
-                                    byte[] buffer = new byte[4 * 1024];
+                                    byte[] buffer = new byte[1024 * 1024];
                                     int len;
                                     while ((len = inputStream.read(buffer)) != -1) {
                                         cipherOutputStream.write(buffer, 0, len);
