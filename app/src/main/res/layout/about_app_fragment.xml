@@ -3,6 +3,19 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <com.f0x1d.cripty.view.CenteredToolbar
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/toolbar"
+        android:elevation="10dp"/>
+
+    <View
+        android:id="@+id/toolbar_shadow"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@drawable/toolbar_shadow"
+        android:layout_below="@id/toolbar"/>
+
     <LinearLayout
         android:orientation="vertical"
         android:layout_centerInParent="true"

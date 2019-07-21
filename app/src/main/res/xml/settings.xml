@@ -8,12 +8,19 @@
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/file">
+        <SwitchPreference
+            android:defaultValue="true"
+            android:title="@string/overwrite"
+            android:key="overwrite"/>
         <Preference
             android:key="enFileName"
             android:title="@string/en_file_name" />
         <Preference
             android:key="deFileName"
             android:title="@string/de_file_name" />
+        <Preference
+            android:key="deleteAll"
+            android:title="@string/delete_app_folder"/>
     </PreferenceCategory>
 
 </PreferenceScreen>

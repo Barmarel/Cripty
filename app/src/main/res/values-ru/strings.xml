@@ -24,4 +24,7 @@
     <string name="en_file_name">Имя для зашифрованных файлов по умолчанию</string>
     <string name="de_file_name">Имя для расшифрованных файлов по умолчанию</string>
     <string name="file_name">Имя файла</string>
+    <string name="invalid_key_length">Неправильная длина ключа</string>
+    <string name="overwrite">Перезаписывать файлы</string>
+    <string name="delete_app_folder">Удалить все файлы в папке приложения</string>
 </resources>

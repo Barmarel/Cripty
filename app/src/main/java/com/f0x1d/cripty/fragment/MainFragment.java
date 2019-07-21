@@ -192,7 +192,7 @@ public class MainFragment extends Fragment implements FilePickerDialogFragment.O
             @Override
             public void run() {
                 try {
-                    File appFolder = new File(Environment.getExternalStorageDirectory() + "/Crypty");
+                    File appFolder = new File(Environment.getExternalStorageDirectory() + "/Cripty");
                     if (!appFolder.exists())
                         appFolder.mkdirs();
 
@@ -202,12 +202,12 @@ public class MainFragment extends Fragment implements FilePickerDialogFragment.O
                         String defFileName = getMainActivity().getDefaultPreferences().getString("enFileName", "");
                         String fileName = defFileName.isEmpty() ? "encrypted_" + file.getName() : defFileName;
 
-                        cryptedFile = new File(appFolder, fileName);
+                        cryptedFile = new File(appFolder, getNameForFile(fileName));
                     } else if (currentMode == DECRYPT_CODE){
                         String defFileName = getMainActivity().getDefaultPreferences().getString("deFileName", "");
                         String fileName = defFileName.isEmpty() ? "decrypted_" + file.getName() : defFileName;
 
-                        cryptedFile = new File(appFolder, fileName);
+                        cryptedFile = new File(appFolder, getNameForFile(fileName));
                     }
 
                     SecretKeySpec secretKey = new SecretKeySpec(key.getBytes(), "AES");
@@ -249,5 +249,33 @@ public class MainFragment extends Fragment implements FilePickerDialogFragment.O
                 }
             }
         }).start();
+    }
+
+    public String getNameForFile(String fileName){
+        if (getMainActivity().getDefaultPreferences().getBoolean("overwrite", true))
+            return fileName;
+
+        File appFolder = new File(Environment.getExternalStorageDirectory() + "/Cripty");
+
+        String extension = "";
+        int dotPos = fileName.lastIndexOf('.');
+        if (dotPos > 0) {
+            extension = fileName.substring(dotPos);
+            fileName = fileName.substring(0, dotPos);
+        }
+
+        String newFileName = fileName;
+        for (int i = 0; true; i++){
+            if (i == 0) {
+                File file = new File(appFolder, newFileName + extension);
+                if (!file.exists())
+                    return newFileName + extension;
+            } else {
+                newFileName = fileName + i;
+                File file = new File(appFolder, newFileName + extension);
+                if (!file.exists())
+                    return newFileName + extension;
+            }
+        }
     }
 }

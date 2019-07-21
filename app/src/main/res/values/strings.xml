@@ -24,4 +24,7 @@
     <string name="en_file_name">Default encrypted file name</string>
     <string name="de_file_name">Default decrypted file name</string>
     <string name="file_name">File name</string>
+    <string name="invalid_key_length">Invalid key length</string>
+    <string name="overwrite">Overwrite files</string>
+    <string name="delete_app_folder">Delete all files in app folder</string>
 </resources>

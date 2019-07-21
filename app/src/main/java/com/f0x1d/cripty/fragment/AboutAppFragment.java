@@ -12,9 +12,11 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 
 import com.f0x1d.cripty.R;
+import com.f0x1d.cripty.activity.MainActivity;
 
 public class AboutAppFragment extends Fragment {
 
@@ -29,6 +31,16 @@ public class AboutAppFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.about_app_fragment, container, false);
+
+        Toolbar toolbar = v.findViewById(R.id.toolbar);
+        toolbar.setTitle(R.string.about_app);
+        toolbar.setNavigationIcon(R.drawable.ic_arrow_back_black_24dp);
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getActivity().getSupportFragmentManager().popBackStack();
+            }
+        });
 
         v.findViewById(R.id.source_code).setOnClickListener(new View.OnClickListener() {
             @Override
