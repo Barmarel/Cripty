@@ -3,11 +3,15 @@ package com.f0x1d.cripty.fragment;
 import android.app.ProgressDialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.ServiceConnection;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -24,6 +28,7 @@ import com.f0x1d.cripty.R;
 import com.f0x1d.cripty.activity.MainActivity;
 import com.f0x1d.cripty.activity.SettingsActivity;
 import com.f0x1d.cripty.fragment.dialogs.FilePickerDialogFragment;
+import com.f0x1d.cripty.service.CriptingService;
 import com.github.angads25.filepicker.model.DialogConfigs;
 import com.github.angads25.filepicker.model.DialogProperties;
 import com.google.android.material.button.MaterialButton;
@@ -42,6 +47,8 @@ import javax.crypto.Cipher;
 import javax.crypto.CipherOutputStream;
 import javax.crypto.spec.SecretKeySpec;
 
+import static android.content.Context.BIND_AUTO_CREATE;
+
 public class MainFragment extends Fragment implements FilePickerDialogFragment.OnFilesSelectedListener {
 
     public final int ENCRYPT_CODE = 0;
@@ -52,6 +59,8 @@ public class MainFragment extends Fragment implements FilePickerDialogFragment.O
     public Toolbar toolbar;
 
     public int currentMode = -1;
+
+    public CriptingService service = null;
 
     public static MainFragment newInstance() {
         Bundle args = new Bundle();
@@ -120,36 +129,6 @@ public class MainFragment extends Fragment implements FilePickerDialogFragment.O
         return v;
     }
 
-    public void processError(Exception e) {
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        e.printStackTrace(pw);
-        String sStackTrace = sw.toString();
-
-        new MaterialAlertDialogBuilder(getMainActivity())
-                .setTitle("Error!")
-                .setMessage(sStackTrace)
-                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.cancel();
-                    }
-                })
-                .setNeutralButton(R.string.copy, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        ClipboardManager manager = (ClipboardManager) getMainActivity().getSystemService(Context.CLIPBOARD_SERVICE);
-                        ClipData data = ClipData.newPlainText("error", sStackTrace);
-                        manager.setPrimaryClip(data);
-
-                        Snackbar.make(getView(), R.string.copied, Snackbar.LENGTH_SHORT).show();
-                    }
-                })
-                .show();
-
-        e.printStackTrace();
-    }
-
     @Override
     public void onFilesSelected(String tag, List<File> files) {
         File file = files.get(0);
@@ -183,99 +162,22 @@ public class MainFragment extends Fragment implements FilePickerDialogFragment.O
     }
 
     public void process(String key, File file){
-        final ProgressDialog progressDialog = new ProgressDialog(getMainActivity());
-        progressDialog.setMessage(getString(R.string.loading));
-        progressDialog.setCancelable(false);
-        progressDialog.show();
+        Intent intent = new Intent(getMainActivity(), CriptingService.class);
+        intent.putExtra("file", file);
+        intent.putExtra("key", key);
+        intent.putExtra("mode", currentMode);
 
-        new Thread(new Runnable() {
+        getMainActivity().startService(intent);
+        getMainActivity().bindService(intent, new ServiceConnection() {
             @Override
-            public void run() {
-                try {
-                    File appFolder = new File(Environment.getExternalStorageDirectory() + "/Cripty");
-                    if (!appFolder.exists())
-                        appFolder.mkdirs();
-
-                    File cryptedFile = null;
-
-                    if (currentMode == ENCRYPT_CODE){
-                        String defFileName = getMainActivity().getDefaultPreferences().getString("enFileName", "");
-                        String fileName = defFileName.isEmpty() ? "encrypted_" + file.getName() : defFileName;
-
-                        cryptedFile = new File(appFolder, getNameForFile(fileName));
-                    } else if (currentMode == DECRYPT_CODE){
-                        String defFileName = getMainActivity().getDefaultPreferences().getString("deFileName", "");
-                        String fileName = defFileName.isEmpty() ? "decrypted_" + file.getName() : defFileName;
-
-                        cryptedFile = new File(appFolder, getNameForFile(fileName));
-                    }
-
-                    SecretKeySpec secretKey = new SecretKeySpec(key.getBytes(), "AES");
-                    Cipher cipher = Cipher.getInstance("AES");
-                    if (currentMode == ENCRYPT_CODE)
-                        cipher.init(Cipher.ENCRYPT_MODE, secretKey);
-                    else if (currentMode == DECRYPT_CODE)
-                        cipher.init(Cipher.DECRYPT_MODE, secretKey);
-
-                    FileInputStream inputStream = new FileInputStream(file);
-                    CipherOutputStream cipherOutputStream = new CipherOutputStream(new FileOutputStream(cryptedFile), cipher);
-
-                    byte[] buffer = new byte[1024 * 1024];
-                    int len;
-                    while ((len = inputStream.read(buffer)) != -1) {
-                        cipherOutputStream.write(buffer, 0, len);
-                    }
-
-                    inputStream.close();
-                    cipherOutputStream.close();
-
-                    File finalCryptedFile = cryptedFile;
-                    getMainActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            progressDialog.cancel();
-
-                            Snackbar.make(getView(), getString(R.string.saved_to) + " " + finalCryptedFile.getAbsolutePath(), Snackbar.LENGTH_LONG).show();
-                        }
-                    });
-                } catch (Exception e) {
-                    getMainActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            progressDialog.cancel();
-                            processError(e);
-                        }
-                    });
-                }
+            public void onServiceConnected(ComponentName name, IBinder service) {
+                MainFragment.this.service = (CriptingService) service;
             }
-        }).start();
-    }
 
-    public String getNameForFile(String fileName){
-        if (getMainActivity().getDefaultPreferences().getBoolean("overwrite", true))
-            return fileName;
-
-        File appFolder = new File(Environment.getExternalStorageDirectory() + "/Cripty");
-
-        String extension = "";
-        int dotPos = fileName.lastIndexOf('.');
-        if (dotPos > 0) {
-            extension = fileName.substring(dotPos);
-            fileName = fileName.substring(0, dotPos);
-        }
-
-        String newFileName = fileName;
-        for (int i = 0; true; i++){
-            if (i == 0) {
-                File file = new File(appFolder, newFileName + extension);
-                if (!file.exists())
-                    return newFileName + extension;
-            } else {
-                newFileName = fileName + i;
-                File file = new File(appFolder, newFileName + extension);
-                if (!file.exists())
-                    return newFileName + extension;
+            @Override
+            public void onServiceDisconnected(ComponentName name) {
+                service = null;
             }
-        }
+        }, BIND_AUTO_CREATE);
     }
 }

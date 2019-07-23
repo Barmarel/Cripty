@@ -9,7 +9,7 @@
     <string name="ok">OK</string>
     <string name="copy">Copy</string>
     <string name="copied">Copied</string>
-    <string name="loading">Processing...</string>
+    <string name="loading">Processing</string>
     <string name="about_app">About app</string>
     <string name="source_code">Source code</string>
     <string name="created_by">Created by</string>
@@ -27,4 +27,7 @@
     <string name="invalid_key_length">Invalid key length</string>
     <string name="overwrite">Overwrite files</string>
     <string name="delete_app_folder">Delete all files in app folder</string>
+    <string name="successfully">Successfully!</string>
+    <string name="cripty_working">Cripty is working</string>
+    <string name="please_wait">Please, wait a little bit</string>
 </resources>

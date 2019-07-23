@@ -4,6 +4,7 @@
     package="com.f0x1d.cripty">
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
 
     <application
         android:allowBackup="true"
@@ -22,6 +23,7 @@
         </activity>
         <activity android:name=".activity.SettingsActivity" android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|uiMode"/>
         <receiver android:name=".receiver.CopyTextReceiver"/>
+        <service android:name=".service.CriptingService"/>
     </application>
 
 </manifest>

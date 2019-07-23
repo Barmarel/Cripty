@@ -9,7 +9,7 @@
     <string name="ok">ОК</string>
     <string name="copy">Копировать</string>
     <string name="copied">Скопировано</string>
-    <string name="loading">Обработка...</string>
+    <string name="loading">Обработка</string>
     <string name="about_app">О приложении</string>
     <string name="source_code">Исходный код</string>
     <string name="created_by">Создано</string>
@@ -27,4 +27,7 @@
     <string name="invalid_key_length">Неправильная длина ключа</string>
     <string name="overwrite">Перезаписывать файлы</string>
     <string name="delete_app_folder">Удалить все файлы в папке приложения</string>
+    <string name="successfully">Успешно!</string>
+    <string name="cripty_working">Cripty работает</string>
+    <string name="please_wait">Пожалуйста, немного подождите</string>
 </resources>

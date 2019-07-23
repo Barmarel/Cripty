@@ -5,13 +5,16 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
 import com.f0x1d.cripty.R;
 import com.f0x1d.cripty.fragment.MainFragment;
@@ -27,7 +30,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 228);
+            if (!hasPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE))
+                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 228);
         }
         defPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         super.onCreate(savedInstanceState);
@@ -91,5 +95,16 @@ public class MainActivity extends AppCompatActivity {
 
     public SharedPreferences getDefaultPreferences(){
         return defPrefs;
+    }
+
+    public boolean hasPermissions(String... permissions) {
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && permissions != null) {
+            for (String permission : permissions) {
+                if (ActivityCompat.checkSelfPermission(getApplicationContext(), permission) != PackageManager.PERMISSION_GRANTED) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }
