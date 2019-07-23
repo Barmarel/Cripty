@@ -34,14 +34,14 @@ public class AboutAppFragment extends Fragment {
 
         Toolbar toolbar = v.findViewById(R.id.toolbar);
         toolbar.setTitle(R.string.about_app);
-        toolbar.setNavigationIcon(R.drawable.ic_arrow_back_black_24dp);
+        toolbar.setNavigationIcon(((MainActivity) getActivity()).getDefaultPreferences().getBoolean("night", false)
+                ? R.drawable.ic_arrow_back_white_24dp : R.drawable.ic_arrow_back_black_24dp);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 getActivity().getSupportFragmentManager().popBackStack();
             }
         });
-
         v.findViewById(R.id.source_code).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

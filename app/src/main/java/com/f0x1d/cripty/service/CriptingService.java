@@ -1,14 +1,9 @@
 package com.f0x1d.cripty.service;
 
-import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.ClipData;
-import android.content.ClipboardManager;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Environment;
 import android.os.Handler;
@@ -20,7 +15,6 @@ import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
 import com.f0x1d.cripty.R;
-import com.f0x1d.cripty.activity.MainActivity;
 import com.f0x1d.cripty.receiver.CopyTextReceiver;
 
 import java.io.File;
@@ -37,11 +31,9 @@ import javax.crypto.spec.SecretKeySpec;
 
 public class CriptingService extends Service {
 
-    public NotificationManager notificationManager;
-
     public final int ENCRYPT_CODE = 0;
     public final int DECRYPT_CODE = 1;
-
+    public NotificationManager notificationManager;
     public Handler handler;
 
     private List<Integer> currentWorks = new ArrayList<>();
@@ -61,8 +53,8 @@ public class CriptingService extends Service {
         createChannel();
 
         int id = 0;
-        if (!currentWorks.isEmpty()){
-            while (currentWorks.contains(id)){
+        if (!currentWorks.isEmpty()) {
+            while (currentWorks.contains(id)) {
                 id++;
             }
         }
@@ -88,7 +80,7 @@ public class CriptingService extends Service {
         return START_NOT_STICKY;
     }
 
-    public void updateCounter(int id, NotificationCompat.Builder builder, int max, int count){
+    public void updateCounter(int id, NotificationCompat.Builder builder, int max, int count) {
         createChannel();
 
         builder.setSmallIcon(R.drawable.ic_sync_black_24dp);
@@ -99,7 +91,7 @@ public class CriptingService extends Service {
         notificationManager.notify(id, builder.build());
     }
 
-    private void createChannel(){
+    private void createChannel() {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(getPackageName() + ".process", getString(R.string.loading), NotificationManager.IMPORTANCE_LOW);
             channel.enableLights(false);
@@ -108,7 +100,7 @@ public class CriptingService extends Service {
         }
     }
 
-    public void startCripting(int id, NotificationCompat.Builder builder, File file, String key, int currentMode){
+    public void startCripting(int id, NotificationCompat.Builder builder, File file, String key, int currentMode) {
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -119,12 +111,12 @@ public class CriptingService extends Service {
 
                     File cryptedFile = null;
 
-                    if (currentMode == ENCRYPT_CODE){
+                    if (currentMode == ENCRYPT_CODE) {
                         String defFileName = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString("enFileName", "");
                         String fileName = defFileName.isEmpty() ? "encrypted_" + file.getName() : defFileName;
 
                         cryptedFile = new File(appFolder, getNameForFile(fileName));
-                    } else if (currentMode == DECRYPT_CODE){
+                    } else if (currentMode == DECRYPT_CODE) {
                         String defFileName = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString("deFileName", "");
                         String fileName = defFileName.isEmpty() ? "decrypted_" + file.getName() : defFileName;
 
@@ -180,7 +172,7 @@ public class CriptingService extends Service {
         }).start();
     }
 
-    public String getNameForFile(String fileName){
+    public String getNameForFile(String fileName) {
         if (PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getBoolean("overwrite", true))
             return fileName;
 
@@ -194,7 +186,7 @@ public class CriptingService extends Service {
         }
 
         String newFileName = fileName;
-        for (int i = 0; true; i++){
+        for (int i = 0; true; i++) {
             if (i == 0) {
                 File file = new File(appFolder, newFileName + extension);
                 if (!file.exists())

@@ -30,4 +30,7 @@
     <string name="successfully">Successfully!</string>
     <string name="cripty_working">Cripty is working</string>
     <string name="please_wait">Please, wait a little bit</string>
+    <string name="dark_theme">Dark theme</string>
+    <string name="ui">UI</string>
+    <string name="select_def_folder">Default folder</string>
 </resources>

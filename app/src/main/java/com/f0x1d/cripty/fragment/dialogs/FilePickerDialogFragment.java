@@ -7,7 +7,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
-import com.f0x1d.cripty.R;
+import com.f0x1d.cripty.utils.ThemeUtils;
 import com.github.angads25.filepicker.model.DialogProperties;
 import com.github.angads25.filepicker.view.FilePickerDialog;
 
@@ -82,7 +82,7 @@ public class FilePickerDialogFragment extends DialogFragment {
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
-        FilePickerDialog dialog = new FilePickerDialog(getContext(), mDialogProperties, R.style.AppTheme_Picker);
+        FilePickerDialog dialog = new FilePickerDialog(getContext(), mDialogProperties, ThemeUtils.getCurrentPickerTheme());
         dialog.setDialogSelectionListener((files) -> {
             if (mListener == null)
                 return;

@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <PreferenceCategory android:title="@string/ui">
+        <SwitchPreference
+            android:title="@string/dark_theme"
+            android:key="night"/>
+    </PreferenceCategory>
+
     <PreferenceCategory android:title="AES">
         <Preference
             android:title="@string/choose_default_key"
@@ -8,6 +14,10 @@
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/file">
+        <Preference
+            android:title="@string/select_def_folder"
+            android:key="def_folder"/>
+
         <SwitchPreference
             android:defaultValue="true"
             android:title="@string/overwrite"

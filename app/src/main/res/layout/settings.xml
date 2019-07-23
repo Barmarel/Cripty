@@ -15,11 +15,10 @@
         android:background="@drawable/toolbar_shadow"
         android:layout_below="@id/toolbar"/>
 
-    <ListView
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/toolbar"
-        android:divider="@null"
-        android:id="@android:id/list"/>
+        android:id="@+id/container"/>
 
 </RelativeLayout>

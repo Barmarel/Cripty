@@ -30,4 +30,7 @@
     <string name="successfully">Успешно!</string>
     <string name="cripty_working">Cripty работает</string>
     <string name="please_wait">Пожалуйста, немного подождите</string>
+    <string name="dark_theme">Тёмная тема</string>
+    <string name="ui">Интерфейс</string>
+    <string name="select_def_folder">Папка по умолчанию</string>
 </resources>

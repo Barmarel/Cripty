@@ -5,7 +5,6 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -19,6 +18,7 @@ import androidx.core.app.ActivityCompat;
 import com.f0x1d.cripty.R;
 import com.f0x1d.cripty.fragment.MainFragment;
 import com.f0x1d.cripty.receiver.CopyTextReceiver;
+import com.f0x1d.cripty.utils.ThemeUtils;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -29,6 +29,8 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        setTheme(ThemeUtils.getCurrentTheme());
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (!hasPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE))
                 requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 228);
@@ -41,7 +43,6 @@ public class MainActivity extends AppCompatActivity {
         Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
             @Override
             public void uncaughtException(Thread t, Throwable e) {
-
                 StringWriter sw = new StringWriter();
                 PrintWriter pw = new PrintWriter(sw);
                 e.printStackTrace(pw);
@@ -93,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public SharedPreferences getDefaultPreferences(){
+    public SharedPreferences getDefaultPreferences() {
         return defPrefs;
     }
 

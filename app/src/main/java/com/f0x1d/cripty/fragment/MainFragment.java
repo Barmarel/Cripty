@@ -1,18 +1,12 @@
 package com.f0x1d.cripty.fragment;
 
-import android.app.ProgressDialog;
-import android.content.ClipData;
-import android.content.ClipboardManager;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
-import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -33,19 +27,10 @@ import com.github.angads25.filepicker.model.DialogConfigs;
 import com.github.angads25.filepicker.model.DialogProperties;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputLayout;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.List;
-
-import javax.crypto.Cipher;
-import javax.crypto.CipherOutputStream;
-import javax.crypto.spec.SecretKeySpec;
 
 import static android.content.Context.BIND_AUTO_CREATE;
 
@@ -89,6 +74,8 @@ public class MainFragment extends Fragment implements FilePickerDialogFragment.O
                 properties.selection_mode = DialogConfigs.SINGLE_MODE;
                 properties.selection_type = DialogConfigs.FILE_SELECT;
                 properties.root = Environment.getExternalStorageDirectory();
+                properties.offset = new File(getMainActivity().getDefaultPreferences().getString("def_folder",
+                        Environment.getExternalStorageDirectory().getAbsolutePath()));
 
                 if (v.getId() == R.id.decrypt)
                     currentMode = DECRYPT_CODE;
@@ -135,7 +122,7 @@ public class MainFragment extends Fragment implements FilePickerDialogFragment.O
 
         String defKey = getMainActivity().getDefaultPreferences().getString("defKey", "");
 
-        if (!defKey.isEmpty()){
+        if (!defKey.isEmpty()) {
             process(defKey, file);
             return;
         }
@@ -161,7 +148,7 @@ public class MainFragment extends Fragment implements FilePickerDialogFragment.O
                 }).show();
     }
 
-    public void process(String key, File file){
+    public void process(String key, File file) {
         Intent intent = new Intent(getMainActivity(), CriptingService.class);
         intent.putExtra("file", file);
         intent.putExtra("key", key);
