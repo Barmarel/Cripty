@@ -36,24 +36,10 @@ public class AboutAppFragment extends Fragment {
         toolbar.setTitle(R.string.about_app);
         toolbar.setNavigationIcon(((MainActivity) getActivity()).getDefaultPreferences().getBoolean("night", false)
                 ? R.drawable.ic_arrow_back_white_24dp : R.drawable.ic_arrow_back_black_24dp);
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                getActivity().getSupportFragmentManager().popBackStack();
-            }
-        });
-        v.findViewById(R.id.source_code).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(Intent.ACTION_VIEW).setData(Uri.parse("https://github.com/F0x1d/Cripty")));
-            }
-        });
-        v.findViewById(R.id.support_me).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(Intent.ACTION_VIEW).setData(Uri.parse("https://yasobe.ru/na/f0x1d")));
-            }
-        });
+
+        toolbar.setNavigationOnClickListener(v13 -> getActivity().getSupportFragmentManager().popBackStack());
+        v.findViewById(R.id.source_code).setOnClickListener(v1 -> startActivity(new Intent(Intent.ACTION_VIEW).setData(Uri.parse("https://github.com/F0x1d/Cripty"))));
+        v.findViewById(R.id.support_me).setOnClickListener(v12 -> startActivity(new Intent(Intent.ACTION_VIEW).setData(Uri.parse("https://yasobe.ru/na/f0x1d"))));
 
         TextView createdBy = v.findViewById(R.id.created);
         createdBy.setSingleLine();

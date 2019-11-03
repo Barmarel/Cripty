@@ -26,6 +26,7 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputLayout;
 
 import java.io.File;
+import java.util.Base64;
 import java.util.List;
 
 public class SettingsFragment extends PreferenceFragmentCompat implements FilePickerDialogFragment.OnFilesSelectedListener {
@@ -38,175 +39,178 @@ public class SettingsFragment extends PreferenceFragmentCompat implements FilePi
         return fragment;
     }
 
+    public void showBase64KeyDialog(Preference defKey) {
+        View v = LayoutInflater.from(requireContext()).inflate(R.layout.edit_text, null);
+        final TextInputLayout editTextLayout = v.findViewById(R.id.edittext_layout);
+        editTextLayout.setHint(getString(R.string.key_b64));
+        EditText editText = v.findViewById(R.id.edittext);
+
+        if (PreferenceManager.getDefaultSharedPreferences(requireContext()).getBoolean("b64_key", false))
+            editText.setText(PreferenceManager.getDefaultSharedPreferences(requireContext()).getString("defKey", ""));
+
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.choose_default_key_b64)
+                .setMessage(R.string.set_empty_to_set_manually)
+                .setView(v)
+                .setPositiveButton(R.string.ok, ((dialog, which) -> {
+                    PreferenceManager.getDefaultSharedPreferences(requireContext()).edit()
+                            .putString("defKey", editText.getText().toString())
+                            .putBoolean("b64_key", true).apply();
+                    defKey.setSummary(editText.getText().toString());
+
+                    dialog.cancel();
+                })).show();
+    }
+
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         addPreferencesFromResource(R.xml.settings);
 
         Preference defKey = findPreference("defKey");
-        defKey.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                View v = LayoutInflater.from(getContext()).inflate(R.layout.edit_text, null);
-                final TextInputLayout editTextLayout = v.findViewById(R.id.edittext_layout);
-                editTextLayout.setHint(getString(R.string.key));
+        defKey.setSummary(PreferenceManager.getDefaultSharedPreferences(requireContext()).getString("defKey", ""));
+        defKey.setOnPreferenceClickListener(preference -> {
+            View v = LayoutInflater.from(requireContext()).inflate(R.layout.edit_text, null);
+            final TextInputLayout editTextLayout = v.findViewById(R.id.edittext_layout);
+            editTextLayout.setHint(getString(R.string.key));
+            EditText editText = v.findViewById(R.id.edittext);
 
-                ((EditText) v.findViewById(R.id.edittext)).setText(PreferenceManager.getDefaultSharedPreferences(getContext()).getString("defKey", ""));
+            if (!PreferenceManager.getDefaultSharedPreferences(requireContext()).getBoolean("b64_key", false))
+                editText.setText(PreferenceManager.getDefaultSharedPreferences(requireContext()).getString("defKey", ""));
 
-                ((EditText) v.findViewById(R.id.edittext)).addTextChangedListener(new TextWatcher() {
-                    @Override
-                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            editText.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                }
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {
+                    String key = s.toString();
+
+                    if (key.length() != 16 && key.length() != 24 && key.length() != 32 && key.length() != 0) {
+                        editText.setError(getString(R.string.invalid_key_length));
                     }
+                }
+            });
 
-                    @Override
-                    public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    }
-
-                    @Override
-                    public void afterTextChanged(Editable s) {
-                        String key = s.toString();
+            new MaterialAlertDialogBuilder(requireContext())
+                    .setTitle(R.string.choose_default_key_aes)
+                    .setMessage(R.string.set_empty_to_set_manually)
+                    .setView(v)
+                    .setPositiveButton(R.string.ok, (dialog, which) -> {
+                        String key = editText.getText().toString();
 
                         if (key.length() != 16 && key.length() != 24 && key.length() != 32 && key.length() != 0) {
-                            ((EditText) v.findViewById(R.id.edittext)).setError(getString(R.string.invalid_key_length));
+                            Snackbar.make(getListView(), R.string.invalid_key_length, Snackbar.LENGTH_SHORT).show();
+                            return;
                         }
-                    }
-                });
 
-                new MaterialAlertDialogBuilder(getContext())
-                        .setTitle(R.string.choose_default_key)
-                        .setMessage(R.string.set_empty_to_set_manually)
-                        .setView(v)
-                        .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                String key = ((EditText) v.findViewById(R.id.edittext)).getText().toString();
+                        PreferenceManager.getDefaultSharedPreferences(requireContext()).edit()
+                                .putString("defKey", key)
+                                .putBoolean("b64_key", false).apply();
+                        defKey.setSummary(key);
 
-                                if (key.length() != 16 && key.length() != 24 && key.length() != 32 && key.length() != 0) {
-                                    Snackbar.make(getListView(), R.string.invalid_key_length, Snackbar.LENGTH_SHORT).show();
-                                    return;
-                                }
-
-                                PreferenceManager.getDefaultSharedPreferences(getContext()).edit()
-                                        .putString("defKey", key).apply();
-                                dialog.cancel();
-                            }
-                        }).show();
-                return false;
-            }
+                        dialog.cancel();
+                    })
+                    .setNegativeButton(R.string.b64, ((dialog, which) -> showBase64KeyDialog(defKey))).show();
+            return false;
         });
 
         Preference enFileName = findPreference("enFileName");
-        enFileName.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                View v = LayoutInflater.from(getContext()).inflate(R.layout.edit_text, null);
-                final TextInputLayout editTextLayout = v.findViewById(R.id.edittext_layout);
-                editTextLayout.setHint(getString(R.string.file_name));
+        enFileName.setOnPreferenceClickListener(preference -> {
+            View v = LayoutInflater.from(requireContext()).inflate(R.layout.edit_text, null);
+            final TextInputLayout editTextLayout = v.findViewById(R.id.edittext_layout);
+            editTextLayout.setHint(getString(R.string.file_name));
 
-                ((EditText) v.findViewById(R.id.edittext)).setText(PreferenceManager.getDefaultSharedPreferences(getContext()).getString("enFileName", ""));
+            ((EditText) v.findViewById(R.id.edittext)).setText(PreferenceManager.getDefaultSharedPreferences(requireContext()).getString("enFileName", ""));
 
-                new MaterialAlertDialogBuilder(getContext())
-                        .setTitle(R.string.en_file_name)
-                        .setMessage(R.string.set_empty_to_use_default)
-                        .setView(v)
-                        .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                PreferenceManager.getDefaultSharedPreferences(getContext()).edit()
-                                        .putString("enFileName", ((EditText) v.findViewById(R.id.edittext)).getText().toString()).apply();
-                                dialog.cancel();
-                            }
-                        })
-                        .show();
-                return false;
-            }
+            new MaterialAlertDialogBuilder(requireContext())
+                    .setTitle(R.string.en_file_name)
+                    .setMessage(R.string.set_empty_to_use_default)
+                    .setView(v)
+                    .setPositiveButton(R.string.ok, (dialog, which) -> {
+                        PreferenceManager.getDefaultSharedPreferences(requireContext()).edit()
+                                .putString("enFileName", ((EditText) v.findViewById(R.id.edittext)).getText().toString()).apply();
+                        dialog.cancel();
+                    })
+                    .show();
+            return false;
         });
 
         Preference deFileName = findPreference("deFileName");
-        deFileName.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                View v = LayoutInflater.from(getContext()).inflate(R.layout.edit_text, null);
-                final TextInputLayout editTextLayout = v.findViewById(R.id.edittext_layout);
-                editTextLayout.setHint(getString(R.string.file_name));
+        deFileName.setOnPreferenceClickListener(preference -> {
+            View v = LayoutInflater.from(requireContext()).inflate(R.layout.edit_text, null);
+            final TextInputLayout editTextLayout = v.findViewById(R.id.edittext_layout);
+            editTextLayout.setHint(getString(R.string.file_name));
 
-                ((EditText) v.findViewById(R.id.edittext)).setText(PreferenceManager.getDefaultSharedPreferences(getContext()).getString("deFileName", ""));
+            ((EditText) v.findViewById(R.id.edittext)).setText(PreferenceManager.getDefaultSharedPreferences(requireContext()).getString("deFileName", ""));
 
-                new MaterialAlertDialogBuilder(getContext())
-                        .setTitle(R.string.de_file_name)
-                        .setMessage(R.string.set_empty_to_use_default)
-                        .setView(v)
-                        .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                PreferenceManager.getDefaultSharedPreferences(getContext()).edit()
-                                        .putString("deFileName", ((EditText) v.findViewById(R.id.edittext)).getText().toString()).apply();
-                                dialog.cancel();
-                            }
-                        })
-                        .show();
-                return false;
-            }
+            new MaterialAlertDialogBuilder(requireContext())
+                    .setTitle(R.string.de_file_name)
+                    .setMessage(R.string.set_empty_to_use_default)
+                    .setView(v)
+                    .setPositiveButton(R.string.ok, (dialog, which) -> {
+                        PreferenceManager.getDefaultSharedPreferences(requireContext()).edit()
+                                .putString("deFileName", ((EditText) v.findViewById(R.id.edittext)).getText().toString()).apply();
+                        dialog.cancel();
+                    })
+                    .show();
+            return false;
         });
 
         Preference deleteAll = findPreference("deleteAll");
-        deleteAll.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                ProgressDialog progressDialog = new ProgressDialog(getContext());
-                progressDialog.setMessage(getString(R.string.loading));
-                progressDialog.setCancelable(false);
-                progressDialog.show();
+        deleteAll.setOnPreferenceClickListener(preference -> {
+            ProgressDialog progressDialog = new ProgressDialog(requireContext());
+            progressDialog.setMessage(getString(R.string.loading));
+            progressDialog.setCancelable(false);
+            progressDialog.show();
 
-                File appFolder = new File(Environment.getExternalStorageDirectory() + "/Cripty");
-                if (!appFolder.exists()) {
-                    progressDialog.cancel();
-                    return false;
-                }
-
-                if (appFolder.listFiles().length != 0) {
-                    for (File file : appFolder.listFiles()) {
-                        file.delete();
-                    }
-                }
-                appFolder.delete();
-
+            File appFolder = new File(Environment.getExternalStorageDirectory() + "/Cripty");
+            if (!appFolder.exists()) {
                 progressDialog.cancel();
                 return false;
             }
+
+            if (appFolder.listFiles().length != 0) {
+                for (File file : appFolder.listFiles()) {
+                    file.delete();
+                }
+            }
+            appFolder.delete();
+
+            progressDialog.cancel();
+            return false;
         });
 
         SwitchPreference darkTheme = (SwitchPreference) findPreference("night");
-        darkTheme.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                getActivity().moveTaskToBack(true);
-                startActivity(new Intent(getContext(), MainActivity.class));
-                return false;
-            }
+        darkTheme.setOnPreferenceClickListener(preference -> {
+            getActivity().moveTaskToBack(true);
+            startActivity(new Intent(requireContext(), MainActivity.class));
+            return false;
         });
 
         Preference defFolder = findPreference("def_folder");
-        defFolder.setSummary(PreferenceManager.getDefaultSharedPreferences(getContext()).getString("def_folder", Environment.getExternalStorageDirectory().getAbsolutePath()));
-        defFolder.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                DialogProperties properties = new DialogProperties();
-                properties.selection_mode = DialogConfigs.SINGLE_MODE;
-                properties.selection_type = DialogConfigs.DIR_SELECT;
-                properties.root = Environment.getExternalStorageDirectory();
+        defFolder.setSummary(PreferenceManager.getDefaultSharedPreferences(requireContext()).getString("def_folder", Environment.getExternalStorageDirectory().getAbsolutePath()));
+        defFolder.setOnPreferenceClickListener(preference -> {
+            DialogProperties properties = new DialogProperties();
+            properties.selection_mode = DialogConfigs.SINGLE_MODE;
+            properties.selection_type = DialogConfigs.DIR_SELECT;
+            properties.root = Environment.getExternalStorageDirectory();
 
-                FilePickerDialogFragment filePickerDialogFragment = FilePickerDialogFragment.newInstance(null, getString(R.string.choose_file), properties);
-                filePickerDialogFragment.setListener(SettingsFragment.this);
-                filePickerDialogFragment.show(getActivity().getSupportFragmentManager(), null);
-                return false;
-            }
+            FilePickerDialogFragment filePickerDialogFragment = FilePickerDialogFragment.newInstance(null, getString(R.string.choose_file), properties);
+            filePickerDialogFragment.setListener(SettingsFragment.this);
+            filePickerDialogFragment.show(getActivity().getSupportFragmentManager(), null);
+            return false;
         });
     }
 
     @Override
     public void onFilesSelected(String tag, List<File> files) {
         File file = files.get(0);
-        PreferenceManager.getDefaultSharedPreferences(getContext())
+        PreferenceManager.getDefaultSharedPreferences(requireContext())
                 .edit()
                 .putString("def_folder", file.getAbsolutePath())
                 .apply();

@@ -4,6 +4,7 @@
     <string name="decrypt">Расшифровать</string>
     <string name="choose_key">Введите ваш AES ключ для шифрования</string>
     <string name="key">AES ключ</string>
+    <string name="key_word">Ключ</string>
     <string name="saved_to">Успешно сохранено по пути</string>
     <string name="cancel">Отменить</string>
     <string name="ok">ОК</string>
@@ -17,7 +18,9 @@
     <string name="choose_file">Выберите файл</string>
     <string name="support_me">Поддержать меня</string>
     <string name="settings">Настройки</string>
-    <string name="choose_default_key">Ключ AES по умолчанию</string>
+    <string name="choose_default_key">Ключ по умолчанию</string>
+    <string name="choose_default_key_aes">Ключ AES по умолчанию</string>
+    <string name="choose_default_key_b64">Ключ шифрования, закодированный в Base64 по умолчанию</string>
     <string name="set_empty_to_use_default">Оставьте пустым для использования значения по умолчанию</string>
     <string name="set_empty_to_set_manually">Оставьте пустым для ручного выбора</string>
     <string name="file">Файл</string>
@@ -33,4 +36,7 @@
     <string name="dark_theme">Тёмная тема</string>
     <string name="ui">Интерфейс</string>
     <string name="select_def_folder">Папка по умолчанию</string>
+    <string name="choose_key_b64">Введите ваш ключ шифрования, закодированный в Base64</string>
+    <string name="key_b64">Base64 ключ</string>
+    <string name="b64">Base64</string>
 </resources>

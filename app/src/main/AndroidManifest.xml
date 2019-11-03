@@ -7,6 +7,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
 
     <application
+        android:requestLegacyExternalStorage="true"
         android:name=".App"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -24,7 +25,7 @@
         </activity>
         <activity android:name=".activity.SettingsActivity" android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|uiMode"/>
         <receiver android:name=".receiver.CopyTextReceiver"/>
-        <service android:name=".service.CriptingService"/>
+        <service android:name=".service.CryptingService"/>
     </application>
 
 </manifest>
