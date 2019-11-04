@@ -34,16 +34,16 @@ public class AboutAppFragment extends Fragment {
 
         Toolbar toolbar = v.findViewById(R.id.toolbar);
         toolbar.setTitle(R.string.about_app);
-        toolbar.setNavigationIcon(((MainActivity) getActivity()).getDefaultPreferences().getBoolean("night", false)
+        toolbar.setNavigationIcon(((MainActivity) requireActivity()).getDefaultPreferences().getBoolean("night", false)
                 ? R.drawable.ic_arrow_back_white_24dp : R.drawable.ic_arrow_back_black_24dp);
 
-        toolbar.setNavigationOnClickListener(v13 -> getActivity().getSupportFragmentManager().popBackStack());
+        toolbar.setNavigationOnClickListener(v2 -> requireActivity().getSupportFragmentManager().popBackStack());
         v.findViewById(R.id.source_code).setOnClickListener(v1 -> startActivity(new Intent(Intent.ACTION_VIEW).setData(Uri.parse("https://github.com/F0x1d/Cripty"))));
-        v.findViewById(R.id.support_me).setOnClickListener(v12 -> startActivity(new Intent(Intent.ACTION_VIEW).setData(Uri.parse("https://yasobe.ru/na/f0x1d"))));
+        v.findViewById(R.id.support_me).setOnClickListener(v2 -> startActivity(new Intent(Intent.ACTION_VIEW).setData(Uri.parse("https://f0x1d.gq/donate.html"))));
 
         TextView createdBy = v.findViewById(R.id.created);
         createdBy.setSingleLine();
-        createdBy.setText(Html.fromHtml(getString(R.string.created_by) + " <a href=\"https://t.me/f0x3d\">F0x1d</a>" + getString(R.string.apostrofe)));
+        createdBy.setText(Html.fromHtml(getString(R.string.created_by) + " <a href=\"https://t.me/f0x1d\">F0x1d</a>" + getString(R.string.apostrofe)));
         createdBy.setClickable(true);
         createdBy.setMovementMethod(LinkMovementMethod.getInstance());
         return v;

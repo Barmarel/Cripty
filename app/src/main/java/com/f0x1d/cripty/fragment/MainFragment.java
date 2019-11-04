@@ -57,7 +57,7 @@ public class MainFragment extends Fragment implements FilePickerDialogFragment.O
     }
 
     public MainActivity getMainActivity() {
-        return (MainActivity) getActivity();
+        return (MainActivity) requireActivity();
     }
 
     @Override
@@ -68,7 +68,7 @@ public class MainFragment extends Fragment implements FilePickerDialogFragment.O
         decrypt = v.findViewById(R.id.decrypt);
         toolbar = v.findViewById(R.id.toolbar);
 
-        View.OnClickListener listener = v1 -> {
+        View.OnClickListener listener = view -> {
             DialogProperties properties = new DialogProperties();
             properties.selection_mode = DialogConfigs.SINGLE_MODE;
             properties.selection_type = DialogConfigs.FILE_SELECT;
@@ -76,14 +76,14 @@ public class MainFragment extends Fragment implements FilePickerDialogFragment.O
             properties.offset = new File(getMainActivity().getDefaultPreferences().getString("def_folder",
                     Environment.getExternalStorageDirectory().getAbsolutePath()));
 
-            if (v1.getId() == R.id.decrypt)
+            if (view.getId() == R.id.decrypt)
                 currentMode = DECRYPT_CODE;
-            else if (v1.getId() == R.id.encrypt)
+            else if (view.getId() == R.id.encrypt)
                 currentMode = ENCRYPT_CODE;
 
             FilePickerDialogFragment filePickerDialogFragment = FilePickerDialogFragment.newInstance(null, getString(R.string.choose_file), properties);
             filePickerDialogFragment.setListener(MainFragment.this);
-            filePickerDialogFragment.show(getActivity().getSupportFragmentManager(), null);
+            filePickerDialogFragment.show(requireActivity().getSupportFragmentManager(), null);
         };
 
         encrypt.setOnClickListener(listener);
@@ -129,7 +129,7 @@ public class MainFragment extends Fragment implements FilePickerDialogFragment.O
                 .setView(v)
                 .setPositiveButton(R.string.ok, (dialog, which) -> process(editText.getText().toString().getBytes(), file))
                 .setNeutralButton(R.string.cancel, (dialog, which) -> dialog.cancel())
-                .setNegativeButton(R.string.b64, ((dialog, which) -> showBase64KeyDialog(file))).show();
+                .setNegativeButton(R.string.b64, (dialog, which) -> showBase64KeyDialog(file)).show();
     }
 
     public void showBase64KeyDialog(File file) {

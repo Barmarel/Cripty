@@ -11,6 +11,7 @@
     <string name="copy">Копировать</string>
     <string name="copied">Скопировано</string>
     <string name="loading">Обработка</string>
+    <string name="loading_foreground">Пожалуйста, подождите</string>
     <string name="about_app">О приложении</string>
     <string name="source_code">Исходный код</string>
     <string name="created_by">Создано</string>
@@ -39,4 +40,5 @@
     <string name="choose_key_b64">Введите ваш ключ шифрования, закодированный в Base64</string>
     <string name="key_b64">Base64 ключ</string>
     <string name="b64">Base64</string>
+    <string name="error">Ошибка</string>
 </resources>

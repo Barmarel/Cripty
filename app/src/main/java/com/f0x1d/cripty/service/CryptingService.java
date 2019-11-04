@@ -55,8 +55,6 @@ public class CryptingService extends Service {
 
         notificationManager = (NotificationManager) getApplicationContext().getSystemService(NOTIFICATION_SERVICE);
 
-        createChannel();
-
         File file = (File) intent.getExtras().get("file");
         int mode = intent.getExtras().getInt("mode");
         byte[] key = intent.getExtras().getByteArray("key");
@@ -73,13 +71,17 @@ public class CryptingService extends Service {
         Work newWork = new Work(id, mode, key, file, System.currentTimeMillis());
         currentWorks.add(newWork);
 
+        createChannel(true);
+
         NotificationCompat.Builder foregroundBuilder = new NotificationCompat.Builder(getApplicationContext());
         foregroundBuilder.setContentTitle(getString(R.string.cripty_working));
         foregroundBuilder.setContentText(getString(R.string.please_wait));
         foregroundBuilder.setSmallIcon(R.drawable.ic_sync_black_24dp);
-        foregroundBuilder.setChannelId(getPackageName() + ".process");
+        foregroundBuilder.setChannelId(getPackageName() + ".process_foreground");
 
         startForeground(-1, foregroundBuilder.build());
+
+        createChannel(false);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext());
         builder.setContentTitle(getString(R.string.loading) + " " + file.getName() + "...");
@@ -95,7 +97,7 @@ public class CryptingService extends Service {
 
     public void updateCounter(Work work, NotificationCompat.Builder builder, int max, int count) {
         if (work.lastNotificationUpdateTime < System.currentTimeMillis() - 1000) {
-            createChannel();
+            createChannel(false);
 
             builder.setSmallIcon(R.drawable.ic_sync_black_24dp);
             builder.setChannelId(getPackageName() + ".process");
@@ -108,9 +110,10 @@ public class CryptingService extends Service {
         }
     }
 
-    private void createChannel() {
+    private void createChannel(boolean foreground) {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(getPackageName() + ".process", getString(R.string.loading), NotificationManager.IMPORTANCE_LOW);
+            NotificationChannel channel = new NotificationChannel(foreground ? getPackageName() + ".process_foreground" : getPackageName() + ".process",
+                    foreground ? getString(R.string.loading_foreground) : getString(R.string.loading), NotificationManager.IMPORTANCE_LOW);
             channel.enableLights(false);
             channel.enableVibration(false);
             notificationManager.createNotificationChannel(channel);
@@ -155,9 +158,12 @@ public class CryptingService extends Service {
         e.printStackTrace(pw);
         String sStackTrace = sw.toString();
 
-        createChannel();
+        if (sStackTrace.contains("Key length not 128/192/256 bits."))
+            sStackTrace = getString(R.string.invalid_key_length);
 
-        builder.setContentTitle("Error!");
+        createChannel(false);
+
+        builder.setContentTitle(getString(R.string.error) + "!");
         builder.setOngoing(false);
         builder.setContentText(sStackTrace);
         builder.setStyle(new NotificationCompat.BigTextStyle(builder).bigText(sStackTrace));
@@ -168,11 +174,11 @@ public class CryptingService extends Service {
 
         notificationManager.notify(work.notificationId, builder.build());
 
+        e.printStackTrace();
+
         currentWorks.remove(work);
         if (currentWorks.isEmpty())
             stopForeground(true);
-
-        e.printStackTrace();
     }
 
     public class CryptingTask extends AsyncTask<Void, Void, Void> {

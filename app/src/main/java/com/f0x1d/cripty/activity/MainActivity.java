@@ -1,6 +1,7 @@
 package com.f0x1d.cripty.activity;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -11,6 +12,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.webkit.WebView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -19,6 +21,7 @@ import com.f0x1d.cripty.R;
 import com.f0x1d.cripty.fragment.MainFragment;
 import com.f0x1d.cripty.receiver.CopyTextReceiver;
 import com.f0x1d.cripty.utils.ThemeUtils;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -49,9 +52,9 @@ public class MainActivity extends AppCompatActivity {
                 String stackTrace = sw.toString();
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    String name = "Notifications";
+                    String name = "Crashes";
                     int importance = NotificationManager.IMPORTANCE_DEFAULT;
-                    NotificationChannel channel = new NotificationChannel(getPackageName() + ".notifications", name, importance);
+                    NotificationChannel channel = new NotificationChannel(getPackageName() + ".crashed", name, importance);
                     channel.enableVibration(true);
                     channel.enableLights(true);
                     NotificationManager notificationManager = MainActivity.this.getSystemService(NotificationManager.class);
@@ -77,6 +80,19 @@ public class MainActivity extends AppCompatActivity {
                 defaultHandler.uncaughtException(t, e);
             }
         });
+
+        if (!getDefaultPreferences().getBoolean("showed_faq", false)) {
+            WebView webView = new WebView(this);
+            webView.getSettings().setJavaScriptEnabled(true);
+            webView.loadUrl("file:///android_asset/faq.html");
+
+            new MaterialAlertDialogBuilder(this)
+                    .setCancelable(false)
+                    .setTitle("FAQ")
+                    .setView(webView)
+                    .setPositiveButton(R.string.ok, ((dialog, which) -> getDefaultPreferences().edit().putBoolean("showed_faq", true).apply()))
+                    .show();
+        }
 
         getSupportFragmentManager()
                 .beginTransaction()
