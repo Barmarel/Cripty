@@ -39,7 +39,7 @@ public class AboutAppFragment extends Fragment {
 
         toolbar.setNavigationOnClickListener(v2 -> requireActivity().getSupportFragmentManager().popBackStack());
         v.findViewById(R.id.source_code).setOnClickListener(v1 -> startActivity(new Intent(Intent.ACTION_VIEW).setData(Uri.parse("https://github.com/F0x1d/Cripty"))));
-        v.findViewById(R.id.support_me).setOnClickListener(v2 -> startActivity(new Intent(Intent.ACTION_VIEW).setData(Uri.parse("https://f0x1d.gq/donate.html"))));
+        v.findViewById(R.id.support_me).setOnClickListener(v2 -> startActivity(new Intent(Intent.ACTION_VIEW).setData(Uri.parse("https://f0x1d.gq"))));
 
         TextView createdBy = v.findViewById(R.id.created);
         createdBy.setSingleLine();

@@ -90,8 +90,10 @@ public class SettingsFragment extends PreferenceFragmentCompat implements FilePi
                 public void afterTextChanged(Editable s) {
                     String key = s.toString();
 
-                    if (key.length() != 16 && key.length() != 24 && key.length() != 32 && key.length() != 0) {
+                    if (key.getBytes().length != 16 && key.getBytes().length != 24 && key.getBytes().length != 32 && key.getBytes().length != 0) {
                         editText.setError(getString(R.string.invalid_key_length));
+                    } else {
+                        editText.setError(null);
                     }
                 }
             });

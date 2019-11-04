@@ -7,6 +7,8 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -123,6 +125,27 @@ public class MainFragment extends Fragment implements FilePickerDialogFragment.O
         final TextInputLayout editTextLayout = v.findViewById(R.id.edittext_layout);
         editTextLayout.setHint(getString(R.string.key));
         EditText editText = v.findViewById(R.id.edittext);
+
+        editText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                String key = s.toString();
+
+                if (key.getBytes().length != 16 && key.getBytes().length != 24 && key.getBytes().length != 32) {
+                    editText.setError(getString(R.string.invalid_key_length));
+                } else {
+                    editText.setError(null);
+                }
+            }
+        });
 
         new MaterialAlertDialogBuilder(getMainActivity())
                 .setTitle(R.string.choose_key)
