@@ -37,11 +37,11 @@ public class CryptingService extends Service {
 
     public final int ENCRYPT_CODE = 0;
     public final int DECRYPT_CODE = 1;
-    public NotificationManager notificationManager;
-    public Handler handler;
+    public NotificationManager mNotificationManager;
+    public Handler mHandler;
 
-    private List<Work> currentWorks = new ArrayList<>();
-    private Executor executor = Executors.newCachedThreadPool();
+    private List<Work> mCurrentWorks = new ArrayList<>();
+    private Executor mExecutor = Executors.newCachedThreadPool();
 
     @Nullable
     @Override
@@ -51,17 +51,17 @@ public class CryptingService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        handler = new Handler();
+        mHandler = new Handler();
 
-        notificationManager = (NotificationManager) getApplicationContext().getSystemService(NOTIFICATION_SERVICE);
+        mNotificationManager = (NotificationManager) getApplicationContext().getSystemService(NOTIFICATION_SERVICE);
 
         File file = (File) intent.getExtras().get("file");
         int mode = intent.getExtras().getInt("mode");
         byte[] key = intent.getExtras().getByteArray("key");
 
         int id = 0;
-        for (int i = 0; i < currentWorks.size(); i++) {
-            Work work = currentWorks.get(i);
+        for (int i = 0; i < mCurrentWorks.size(); i++) {
+            Work work = mCurrentWorks.get(i);
             if (work.notificationId == id)
                 id++;
             else
@@ -69,7 +69,7 @@ public class CryptingService extends Service {
         }
 
         Work newWork = new Work(id, mode, key, file, System.currentTimeMillis());
-        currentWorks.add(newWork);
+        mCurrentWorks.add(newWork);
 
         createChannel(true);
 
@@ -89,7 +89,7 @@ public class CryptingService extends Service {
         builder.setChannelId(getPackageName() + ".process");
         builder.setOngoing(true);
 
-        notificationManager.notify(id, builder.build());
+        mNotificationManager.notify(id, builder.build());
         startCrypting(builder, newWork);
 
         return START_NOT_STICKY;
@@ -104,7 +104,7 @@ public class CryptingService extends Service {
             builder.setProgress(max, count, false);
             builder.setOngoing(true);
 
-            notificationManager.notify(work.notificationId, builder.build());
+            mNotificationManager.notify(work.notificationId, builder.build());
 
             work.lastNotificationUpdateTime = System.currentTimeMillis();
         }
@@ -116,12 +116,12 @@ public class CryptingService extends Service {
                     foreground ? getString(R.string.loading_foreground) : getString(R.string.loading), NotificationManager.IMPORTANCE_LOW);
             channel.enableLights(false);
             channel.enableVibration(false);
-            notificationManager.createNotificationChannel(channel);
+            mNotificationManager.createNotificationChannel(channel);
         }
     }
 
     public void startCrypting(NotificationCompat.Builder builder, Work work) {
-        new CryptingTask(work, builder).executeOnExecutor(executor);
+        new CryptingTask(work, builder).executeOnExecutor(mExecutor);
     }
 
     public String getNameForFile(String fileName) {
@@ -172,12 +172,12 @@ public class CryptingService extends Service {
         builder.addAction(new NotificationCompat.Action(0, getString(R.string.copy), PendingIntent.getBroadcast(
                 getApplicationContext(), 1, new Intent(getApplicationContext(), CopyTextReceiver.class).putExtra("text", sStackTrace), 0)));
 
-        notificationManager.notify(work.notificationId, builder.build());
+        mNotificationManager.notify(work.notificationId, builder.build());
 
         e.printStackTrace();
 
-        currentWorks.remove(work);
-        if (currentWorks.isEmpty())
+        mCurrentWorks.remove(work);
+        if (mCurrentWorks.isEmpty())
             stopForeground(true);
     }
 
@@ -236,7 +236,7 @@ public class CryptingService extends Service {
                 cipherOutputStream.close();
 
                 File finalCryptedFile = cryptedFile;
-                handler.post(() -> Toast.makeText(getApplicationContext(), getString(R.string.saved_to) + " " + finalCryptedFile.getAbsolutePath(), Toast.LENGTH_LONG).show());
+                mHandler.post(() -> Toast.makeText(getApplicationContext(), getString(R.string.saved_to) + " " + finalCryptedFile.getAbsolutePath(), Toast.LENGTH_LONG).show());
 
                 builder.setSmallIcon(R.drawable.ic_done_black_24dp);
                 builder.setContentText(getString(R.string.saved_to) + " " + cryptedFile.getAbsolutePath());
@@ -244,10 +244,10 @@ public class CryptingService extends Service {
                 builder.setContentTitle(getString(R.string.successfully));
                 builder.setOngoing(false);
 
-                notificationManager.notify(work.notificationId, builder.build());
-                currentWorks.remove(work);
+                mNotificationManager.notify(work.notificationId, builder.build());
+                mCurrentWorks.remove(work);
 
-                if (currentWorks.isEmpty())
+                if (mCurrentWorks.isEmpty())
                     stopForeground(true);
             } catch (Exception e) {
                 processError(e, builder, work);

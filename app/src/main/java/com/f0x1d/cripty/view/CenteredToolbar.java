@@ -74,6 +74,7 @@ public class CenteredToolbar extends Toolbar {
 
         tvTitle.setEllipsize(TextUtils.TruncateAt.END);
         tvTitle.setTextAppearance(getContext(), R.style.TextAppearance_AppCompat_Widget_ActionBar_Title);
+        tvTitle.setGravity(Gravity.CENTER);
 
         linear = new LinearLayout(getContext());
         linear.setGravity(Gravity.CENTER);

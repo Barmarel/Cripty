@@ -14,7 +14,7 @@ import com.f0x1d.cripty.view.CenteredToolbar;
 
 public class SettingsActivity extends AppCompatActivity {
 
-    private CenteredToolbar toolbar;
+    private CenteredToolbar mToolbar;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -22,11 +22,11 @@ public class SettingsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.settings);
 
-        toolbar = findViewById(R.id.toolbar);
-        toolbar.setTitle(R.string.settings);
-        toolbar.setNavigationIcon(PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getBoolean("night", false)
+        mToolbar = findViewById(R.id.toolbar);
+        mToolbar.setTitle(R.string.settings);
+        mToolbar.setNavigationIcon(PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getBoolean("night", false)
                 ? R.drawable.ic_arrow_back_white_24dp : R.drawable.ic_arrow_back_black_24dp);
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+        mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 onBackPressed();

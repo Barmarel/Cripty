@@ -1,7 +1,6 @@
 package com.f0x1d.cripty.fragment;
 
 import android.content.ComponentName;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
@@ -11,7 +10,6 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Base64;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -42,13 +40,13 @@ public class MainFragment extends Fragment implements FilePickerDialogFragment.O
     public final int ENCRYPT_CODE = 0;
     public final int DECRYPT_CODE = 1;
 
-    public MaterialButton encrypt;
-    public MaterialButton decrypt;
-    public Toolbar toolbar;
+    public MaterialButton mEncryptButton;
+    public MaterialButton mDecryptButton;
+    public Toolbar mToolbar;
 
-    public int currentMode = -1;
+    public int mCurrentMode = -1;
 
-    public CryptingService service = null;
+    public CryptingService mCryptingService = null;
 
     public static MainFragment newInstance() {
         Bundle args = new Bundle();
@@ -66,9 +64,9 @@ public class MainFragment extends Fragment implements FilePickerDialogFragment.O
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.main_fragment, container, false);
 
-        encrypt = v.findViewById(R.id.encrypt);
-        decrypt = v.findViewById(R.id.decrypt);
-        toolbar = v.findViewById(R.id.toolbar);
+        mEncryptButton = v.findViewById(R.id.encrypt);
+        mDecryptButton = v.findViewById(R.id.decrypt);
+        mToolbar = v.findViewById(R.id.toolbar);
 
         View.OnClickListener listener = view -> {
             DialogProperties properties = new DialogProperties();
@@ -79,21 +77,21 @@ public class MainFragment extends Fragment implements FilePickerDialogFragment.O
                     Environment.getExternalStorageDirectory().getAbsolutePath()));
 
             if (view.getId() == R.id.decrypt)
-                currentMode = DECRYPT_CODE;
+                mCurrentMode = DECRYPT_CODE;
             else if (view.getId() == R.id.encrypt)
-                currentMode = ENCRYPT_CODE;
+                mCurrentMode = ENCRYPT_CODE;
 
             FilePickerDialogFragment filePickerDialogFragment = FilePickerDialogFragment.newInstance(null, getString(R.string.choose_file), properties);
             filePickerDialogFragment.setListener(MainFragment.this);
             filePickerDialogFragment.show(requireActivity().getSupportFragmentManager(), null);
         };
 
-        encrypt.setOnClickListener(listener);
-        decrypt.setOnClickListener(listener);
+        mEncryptButton.setOnClickListener(listener);
+        mDecryptButton.setOnClickListener(listener);
 
-        toolbar.setTitle(R.string.app_name);
-        toolbar.inflateMenu(R.menu.about);
-        toolbar.getMenu().findItem(R.id.about).setOnMenuItemClickListener(item -> {
+        mToolbar.setTitle(R.string.app_name);
+        mToolbar.inflateMenu(R.menu.about);
+        mToolbar.getMenu().findItem(R.id.about).setOnMenuItemClickListener(item -> {
             getMainActivity().getSupportFragmentManager()
                     .beginTransaction()
                     .setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out, android.R.animator.fade_in, android.R.animator.fade_out)
@@ -102,7 +100,7 @@ public class MainFragment extends Fragment implements FilePickerDialogFragment.O
                     .commit();
             return false;
         });
-        toolbar.getMenu().findItem(R.id.settings).setOnMenuItemClickListener(item -> {
+        mToolbar.getMenu().findItem(R.id.settings).setOnMenuItemClickListener(item -> {
             startActivity(new Intent(getMainActivity(), SettingsActivity.class));
             return false;
         });
@@ -172,18 +170,18 @@ public class MainFragment extends Fragment implements FilePickerDialogFragment.O
         Intent intent = new Intent(getMainActivity(), CryptingService.class);
         intent.putExtra("file", file);
         intent.putExtra("key", key);
-        intent.putExtra("mode", currentMode);
+        intent.putExtra("mode", mCurrentMode);
 
         getMainActivity().startService(intent);
         getMainActivity().bindService(intent, new ServiceConnection() {
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
-                MainFragment.this.service = (CryptingService) service;
+                MainFragment.this.mCryptingService = (CryptingService) service;
             }
 
             @Override
             public void onServiceDisconnected(ComponentName name) {
-                service = null;
+                mCryptingService = null;
             }
         }, BIND_AUTO_CREATE);
     }
