@@ -14,6 +14,7 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 
 import com.f0x1d.cripty.R;
 import com.f0x1d.cripty.receiver.CopyTextReceiver;
@@ -178,7 +179,12 @@ public class CryptingService extends Service {
 
         mCurrentWorks.remove(work);
         if (mCurrentWorks.isEmpty())
-            stopForeground(true);
+            stopForeground();
+    }
+
+    private void stopForeground() {
+        stopForeground(true);
+        NotificationManagerCompat.from(this).cancel(-1);
     }
 
     public class CryptingTask extends AsyncTask<Void, Void, Void> {
@@ -248,7 +254,7 @@ public class CryptingService extends Service {
                 mCurrentWorks.remove(work);
 
                 if (mCurrentWorks.isEmpty())
-                    stopForeground(true);
+                    stopForeground();
             } catch (Exception e) {
                 processError(e, builder, work);
             }
